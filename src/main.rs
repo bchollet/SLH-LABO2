@@ -1,5 +1,7 @@
 mod db;
 mod ui;
+mod authorization;
+mod utils;
 
 use db::{Database, DATABASE};
 use derive_more::Display;

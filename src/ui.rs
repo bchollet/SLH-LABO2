@@ -130,7 +130,7 @@ fn user_menu(user: &User) -> ShouldContinue {
         Choice::ListOwnReviews => list_own_reviews(user),
         Choice::AddReview => add_review(user).unwrap(),
         Choice::ListEstablishmentReviews => list_establishment_reviews(),
-        Choice::DeleteReview => delete_review(user).unwrap(),
+        Choice::DeleteReview => delete_review(user).unwrap(), //FIXME: Not show if not admin ?
         Choice::Logout => ShouldContinue::No,
     }
 }
@@ -156,7 +156,7 @@ fn add_review(user: &User) -> anyhow::Result<ShouldContinue> {
     }
 
     let comment = Text::new("Entrez votre commentaire : ").prompt()?;
-    let grade = CustomType::new("Entrez votre note : ").prompt()?;
+    let grade = CustomType::new("Entrez votre note : ").prompt()?; //FIXME: Input validation (1 - 5)
     let review = Review::new(&establishment, &user.name, &comment, grade);
 
     review.save()?;
@@ -169,6 +169,8 @@ fn list_establishment_reviews() -> ShouldContinue {
         .prompt()
         .unwrap();
 
+    //FIXME: Owner should only read their review
+    //FIXME: Reviewers should only read their review
     for review in Review::of(&establishment) {
         println!("{}", review);
     }
@@ -179,6 +181,7 @@ fn list_establishment_reviews() -> ShouldContinue {
 fn delete_review(_user: &User) -> anyhow::Result<ShouldContinue> {
     let establishment = Text::new("Entrez le nom de l'établissement : ").prompt()?;
 
+    //FIXME: C'est nimp lol. It should check role, not ask for it
     let is_admin = Confirm::new("Êtes-vous administrateur ?")
         .with_default(true)
         .prompt()?;
