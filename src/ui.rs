@@ -1,10 +1,11 @@
 use crate::{Review, Role, User};
 use anyhow::{anyhow, bail};
-use casbin::{CoreApi};
 use derive_more::Display;
+use futures::executor::block_on;
 use inquire::{Confirm, CustomType, max_length, min_length, Password, PasswordDisplayMode, Select, Text};
 use inquire::validator::{StringValidator};
 use strum::{EnumIter, IntoEnumIterator};
+use crate::utils::authorization::is_authorized;
 use crate::utils::input_validation::{is_name_valid, is_number_in_range, is_password_valid, is_text_length_valid, PASS_MAX_SIZE, PASS_MIN_SIZE, REVIEW_MAX_GRADE, REVIEW_MAX_SIZE, REVIEW_MIN_GRADE, REVIEW_MIN_SIZE};
 use crate::utils::password::{checked_password, hash_password};
 
@@ -218,18 +219,18 @@ fn list_establishment_reviews() -> ShouldContinue {
 }
 
 fn delete_review(_user: &User) -> anyhow::Result<ShouldContinue> {
-    let establishment = Text::new("Entrez le nom de l'établissement : ").prompt()?;
-
-    //FIXME: C'est nimp lol. It should check role, not ask for it => casbin
-    let is_admin = Confirm::new("Êtes-vous administrateur ?")
-        .with_default(true)
-        .prompt()?;
-
+    let is_admin = block_on(is_authorized(_user.clone(), "toto", "delete"));
     if !is_admin {
         bail!("vous n'êtes pas administrateur")
     }
 
-    let name = Text::new("Entrez le nom de l'auteur de l'avis : ").prompt()?;
+    let establishment = Text::new("Entrez le nom de l'établissement : ")
+        .with_validator(is_name_valid)
+        .prompt()?;
+
+    let name = Text::new("Entrez le nom de l'auteur de l'avis : ")
+        .with_validator(is_name_valid)
+        .prompt()?;
     let review = Review::get(&name, &establishment).ok_or(anyhow!("avis manquant"))?;
 
     review.delete();

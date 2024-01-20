@@ -1,29 +1,29 @@
 {
   "users": {
-    "TheStrongestOne": {
-      "name": "TheStrongestOne",
-      "password": "$argon2id$v=19$m=19456,t=2,p=1$ZTMwMmM2OGVmODEzMjIzZDdjNjg3NTY3YWQ4MGI5MzA$Oyu75o2/GaMCIjXASprGzRDOKjhbe6PdJImiVb8bAmM",
+    "Sire Debeugg": {
+      "name": "Sire Debeugg",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$OGQzNGZmYjY1N2Y2OTc0N2VkMzc0OGI2MTJhMDA2Yjk$YGw72mU2lBMKFdvHAPs4INIOFFHmc796+/RsxQ8Lb+U",
+      "role": {
+        "name": "Reviewer"
+      }
+    },
+    "Toto": {
+      "name": "Toto",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$YjBiMDE3MTA1MDUxMDM1ZjE3YWJmYzU3NDA1NDI0MWI$UVu33eOgzmzqyXuU0g29BzgWKnp2pWz2hMYDt0d9G4E",
       "role": {
         "name": "Admin"
       }
     },
-    "Bastian": {
-      "name": "Bastian",
-      "password": "$argon2id$v=19$m=19456,t=2,p=1$MjRmMWEwNjdiZDM1MWFlOThkYWIyNzg4NDMzMDc2MzI$g1Xn4hr4RDUykxN3tvz0Uw/vixTOvx6E6Kf44Fj4OwQ",
+    "TheStrongestOne": {
+      "name": "TheStrongestOne",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$M2MyYjhkM2VmNzJhYjcxNWI5YTQ0NjhjZTkyZmY3YmQ$g/0uq+bDpLIUwNfRL0jHH3zKhmaNPaQZxe1+TngG2ug",
       "role": {
-        "name": "Reviewer"
-      }
-    },
-    "Sire Debeugg": {
-      "name": "Sire Debeugg",
-      "password": "$argon2id$v=19$m=19456,t=2,p=1$MjFjOGZhZTdmMTY0NjUyNjQ5MWNiN2U0NWM2NjQ2Njg$0WqpXOo3+CFDcm4CrgPQzB/NCg0pqyFNrmbFevjgmR0",
-      "role": {
-        "name": "Reviewer"
+        "name": "Admin"
       }
     },
     "Conte Devvisse": {
       "name": "Conte Devvisse",
-      "password": "$argon2id$v=19$m=19456,t=2,p=1$YWY1ZDQ3MWFkNTdiMWFiZmQ4OTgwYzIxMmRmYWU0NDA$ER5HEsJCu4G66HguelXFx1TAcmaBpTrBrl6DOM950zc",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$ZTAyN2E3OWE5ZGQ0ODc2MWVhMzg1YzZjMzExOTI0MTg$GB8lciImkuEBfYeUxNeYjv7yPI1rB3/t6QfJU9O/R7Q",
       "role": {
         "name": "Owner",
         "owned_establishment": "McDonalds"

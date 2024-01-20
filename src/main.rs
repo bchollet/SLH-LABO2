@@ -116,6 +116,11 @@ impl Database {
                 "Sur terre comme au ciel, moi seul mérite d'être vénéré",
                 Role::Admin,
             ),
+            User::new(
+                "Toto",
+                "Argent1234!",
+                Role::Admin,
+            ),
         ];
 
         let reviews = vec![

@@ -3,7 +3,6 @@ use inquire::validator::{Validation};
 use inquire::validator::Validation::{Invalid, Valid};
 use zxcvbn::zxcvbn;
 use regex::Regex;
-use serde::de::StdError;
 
 pub const PASS_MIN_SIZE: usize = 8;
 pub const PASS_MAX_SIZE: usize = 64;
