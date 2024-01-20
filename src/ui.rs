@@ -6,6 +6,7 @@ use inquire::{Confirm, CustomType, max_length, min_length, Password, PasswordDis
 use inquire::validator::{StringValidator};
 use strum::{EnumIter, IntoEnumIterator};
 use crate::utils::input_validation::{is_name_valid, is_number_in_range, is_password_valid, is_text_length_valid, PASS_MAX_SIZE, PASS_MIN_SIZE, REVIEW_MAX_GRADE, REVIEW_MAX_SIZE, REVIEW_MIN_GRADE, REVIEW_MIN_SIZE};
+use crate::utils::password::{checked_password, hash_password};
 
 enum ShouldContinue {
     Yes,
@@ -63,12 +64,16 @@ fn login() -> ShouldContinue {
         .prompt()
         .unwrap();
 
-    let user = User::get(&username).expect("l'utilisateur n'existe pas");
+    let user = User::get(&username).unwrap_or_else(|| {
+        User::new("", "", Role::Reviewer) //No collision since input validation does not allow empty string
+    });
+    let name = if user.name.is_empty() { None } else { Some(&*user.name) };
+    let result = checked_password(name, &user.password, &password);
 
-    if password == user.password {
+    if result {
         loop_menu(|| user_menu(&user));
     } else {
-        println!("Le mot de passe est incorrect");
+        println!("Le nom d'utilisateur ou le mot de passe est incorrect");
     }
 
     ShouldContinue::Yes
@@ -111,7 +116,8 @@ fn register() -> ShouldContinue {
         Role::Reviewer
     };
 
-    let user = User::new(&username, &password, role);
+    let hashed_password = hash_password(password.as_bytes());
+    let user = User::new(&username, &hashed_password, role);
     let _ = user.save();
 
     ShouldContinue::Yes

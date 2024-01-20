@@ -1,25 +1,32 @@
 {
   "users": {
+    "TheStrongestOne": {
+      "name": "TheStrongestOne",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$ZTMwMmM2OGVmODEzMjIzZDdjNjg3NTY3YWQ4MGI5MzA$Oyu75o2/GaMCIjXASprGzRDOKjhbe6PdJImiVb8bAmM",
+      "role": {
+        "name": "Admin"
+      }
+    },
+    "Bastian": {
+      "name": "Bastian",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$MjRmMWEwNjdiZDM1MWFlOThkYWIyNzg4NDMzMDc2MzI$g1Xn4hr4RDUykxN3tvz0Uw/vixTOvx6E6Kf44Fj4OwQ",
+      "role": {
+        "name": "Reviewer"
+      }
+    },
     "Sire Debeugg": {
       "name": "Sire Debeugg",
-      "password": "0n_d17_ch1ffr3r_3t_p4s_crypt3r",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$MjFjOGZhZTdmMTY0NjUyNjQ5MWNiN2U0NWM2NjQ2Njg$0WqpXOo3+CFDcm4CrgPQzB/NCg0pqyFNrmbFevjgmR0",
       "role": {
         "name": "Reviewer"
       }
     },
     "Conte Devvisse": {
       "name": "Conte Devvisse",
-      "password": "c41ss3-à-0ut1l",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$YWY1ZDQ3MWFkNTdiMWFiZmQ4OTgwYzIxMmRmYWU0NDA$ER5HEsJCu4G66HguelXFx1TAcmaBpTrBrl6DOM950zc",
       "role": {
         "name": "Owner",
         "owned_establishment": "McDonalds"
-      }
-    },
-    "TheStrongestOne": {
-      "name": "TheStrongestOne",
-      "password": "Sur terre comme au ciel, moi seul mérite d'être vénéré",
-      "role": {
-        "name": "Admin"
       }
     }
   },

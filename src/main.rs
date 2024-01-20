@@ -125,7 +125,8 @@ impl Database {
             Review::new("Triple R", "Conte Devvisse", "Venez chez moi !", 1),
         ];
 
-        for user in users {
+        for mut user in users {
+            user.password = utils::password::hash_password(&user.password.as_bytes());
             self.store_user(&user).unwrap();
         }
 
