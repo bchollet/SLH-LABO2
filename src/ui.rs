@@ -54,10 +54,14 @@ fn main_menu() -> ShouldContinue {
 
 fn login() -> ShouldContinue {
     let username = Text::new("Entrez votre nom d'utilisateur : ")
-        .prompt()?;
+        .with_validator(is_name_valid)
+        .prompt()
+        .unwrap();
     let password = Password::new("Entrez votre mot de passe: ")
+        .with_validator(max_length!(PASS_MAX_SIZE, "Le mot de passe doit contenir au plus 64 caractères"))
         .without_confirmation()
-        .prompt()?;
+        .prompt()
+        .unwrap();
 
     let user = User::get(&username).expect("l'utilisateur n'existe pas");
 
@@ -88,15 +92,18 @@ fn register() -> ShouldContinue {
         .with_custom_confirmation_message("Confirmez votre mot de passe : ")
         .with_custom_confirmation_error_message("Les mots de passe ne correspondent pas")
         .with_validators(&validators)
-        .prompt()?;
+        .prompt()
+        .unwrap();
     let is_owner = Confirm::new("Êtes-vous propriétaire d'un établissement ?")
         .with_default(false)
-        .prompt()?;
+        .prompt()
+        .unwrap();
 
     let role = if is_owner {
         let owned_establishment = Text::new("Entrez le nom de votre établissement : ")
             .with_validator(is_name_valid)
-            .prompt()?;
+            .prompt()
+            .unwrap();
         Role::Owner {
             owned_establishment,
         }
@@ -172,10 +179,10 @@ fn add_review(user: &User) -> anyhow::Result<ShouldContinue> {
     }
 
     let comment = Text::new("Entrez votre commentaire : ")
-        .with_validator(|input| is_text_length_valid(input, REVIEW_MIN_SIZE, REVIEW_MAX_SIZE))
+        .with_validator(|input: &str| is_text_length_valid(input, REVIEW_MIN_SIZE, REVIEW_MAX_SIZE))
         .prompt()?;
     let grade = CustomType::new("Entrez votre note : ")
-        .with_validator(|input| is_number_in_range(input, REVIEW_MIN_GRADE, REVIEW_MAX_GRADE))
+        .with_validator(|input: &u8| is_number_in_range(input, REVIEW_MIN_GRADE, REVIEW_MAX_GRADE))
         .prompt()?;
     let review = Review::new(&establishment, &user.name, &comment, grade);
 
@@ -186,6 +193,7 @@ fn add_review(user: &User) -> anyhow::Result<ShouldContinue> {
 
 fn list_establishment_reviews() -> ShouldContinue {
     let establishment = Text::new("Entrez le nom de l'établissement : ")
+        .with_validator(is_name_valid)
         .prompt()
         .unwrap();
 

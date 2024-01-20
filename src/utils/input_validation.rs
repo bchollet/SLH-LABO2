@@ -10,8 +10,8 @@ pub const PASS_MAX_SIZE: usize = 64;
 pub const NAME_MAX_SIZE: usize = 63;
 pub const REVIEW_MIN_SIZE: usize = 1;
 pub const REVIEW_MAX_SIZE: usize = 650;
-pub const REVIEW_MIN_GRADE: u64 = 1;
-pub const REVIEW_MAX_GRADE: u64 = 5;
+pub const REVIEW_MIN_GRADE: u8 = 1;
+pub const REVIEW_MAX_GRADE: u8 = 5;
 
 pub fn is_name_valid(name: &str) -> Result<Validation, CustomUserError> {
     let regex_str = r"^[a-zA-Z0-9À-ÖØ-öø-ÿ]+(?:\s[a-zA-Z0-9À-ÖØ-öø-ÿ]+)*$";
@@ -35,14 +35,14 @@ pub fn is_text_length_valid(input: &str, lower_bound: usize, upper_bound: usize)
     Ok(Valid)
 }
 
-pub fn is_number_in_range(input: u64, lower_bound: u64, upper_bound: u64) -> Result<Validation, CustomUserError> {
+pub fn is_number_in_range(input: &u8, lower_bound: u8, upper_bound: u8) -> Result<Validation, CustomUserError> {
     if lower_bound >= upper_bound {
         return Ok(Invalid("Mauvaise utilisation: La borne inf. doit être plus petite que la borne sup.".into()));
     }
-    if input > upper_bound {
+    if input > &upper_bound {
         return Ok(Invalid("Le chiffre est trop grand".into()));
     }
-    if input < lower_bound {
+    if input < &lower_bound {
         return Ok(Invalid("Le chiffre est trop petit".into()));
     }
     Ok(Valid)
@@ -111,7 +111,7 @@ mod tests {
         let ub = 10;
         let input = 5;
         //When
-        let result = is_number_in_range(input, lb, ub);
+        let result = is_number_in_range(&input, lb, ub);
         //Then
         assert_eq!(result.unwrap(), Valid);
     }
@@ -124,8 +124,8 @@ mod tests {
         let input = 11;
         let input2 = 0;
         //When
-        let result = is_number_in_range(input, lb, ub);
-        let result2 = is_number_in_range(input2, lb, ub);
+        let result = is_number_in_range(&input, lb, ub);
+        let result2 = is_number_in_range(&input2, lb, ub);
         //Then
         assert_eq!(result.unwrap(), Invalid("Le chiffre est trop grand".into()));
         assert_eq!(result2.unwrap(), Invalid("Le chiffre est trop petit".into()));
@@ -138,7 +138,7 @@ mod tests {
         let ub = 1;
         let input = 5;
         //When
-        let result = is_number_in_range(input, lb, ub);
+        let result = is_number_in_range(&input, lb, ub);
         //Then
         assert_eq!(result.unwrap(), Invalid("Mauvaise utilisation: La borne inf. doit être plus petite que la borne sup.".into()));
     }
