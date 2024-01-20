@@ -1,94 +1,69 @@
+use inquire::CustomUserError;
+use inquire::validator::{Validation};
+use inquire::validator::Validation::{Invalid, Valid};
 use zxcvbn::zxcvbn;
 use regex::Regex;
+use serde::de::StdError;
 
 pub const PASS_MIN_SIZE: usize = 8;
 pub const PASS_MAX_SIZE: usize = 64;
 pub const NAME_MAX_SIZE: usize = 63;
+pub const REVIEW_MIN_SIZE: usize = 1;
+pub const REVIEW_MAX_SIZE: usize = 650;
+pub const REVIEW_MIN_GRADE: u64 = 1;
+pub const REVIEW_MAX_GRADE: u64 = 5;
 
-// pub fn is_register_form_valid(email: &str, password: &str, password2: &str) -> Result<(), String> {
-//     if !are_passwords_equals(&password, &password2) {
-//         return Err(String::from("Passwords are not the same"));
-//     }
-//     is_email_valid(email).and(is_password_valid(password, 2))
-// }
-//
-// pub fn is_login_form_valid(email: &str, password: &str) -> Result<(), String> {
-//     if is_email_valid(email).and(is_password_valid(password, 2)).is_err() {
-//         return Err(String::from("Incorrect email or password"));
-//     }
-//     Ok(())
-// }
-
-pub fn is_name_valid(name: &str) -> Result<(), String> {
+pub fn is_name_valid(name: &str) -> Result<Validation, CustomUserError> {
     let regex_str = r"^[a-zA-Z0-9À-ÖØ-öø-ÿ]+(?:\s[a-zA-Z0-9À-ÖØ-öø-ÿ]+)*$";
     let regex = Regex::new(regex_str).unwrap();
     if regex.is_match(name) && name.chars().count() <= NAME_MAX_SIZE {
-        return Ok(());
+        return Ok(Valid);
     }
-    Err(String::from("Name is invalid"))
+    Ok(Invalid("Le nom entré est invalide".into()))
 }
 
-pub fn is_short_text_length_valid(input: &str, lower_bound: usize, upper_bound: usize) -> Result<(), String> {
+pub fn is_text_length_valid(input: &str, lower_bound: usize, upper_bound: usize) -> Result<Validation, CustomUserError> {
     if lower_bound >= upper_bound {
-        return Err(String::from("Wrong usage: Lower bound must be lesser than upper bound"));
+        return Ok(Invalid("Mauvaise utilisation: La borne inf. doit être plus petite que la borne sup.".into()));
     }
     if input.chars().count() > upper_bound {
-        return Err(String::from("is too long"));
+        return Ok(Invalid("est trop long".into()));
     }
     if input.chars().count() < lower_bound {
-        return Err(String::from("is too short"));
+        return Ok(Invalid("est trop court".into()));
     }
-    Ok(())
+    Ok(Valid)
 }
 
-pub fn are_passwords_equals(password: &str, password2: &str) -> bool {
-    password == password2
+pub fn is_number_in_range(input: u64, lower_bound: u64, upper_bound: u64) -> Result<Validation, CustomUserError> {
+    if lower_bound >= upper_bound {
+        return Ok(Invalid("Mauvaise utilisation: La borne inf. doit être plus petite que la borne sup.".into()));
+    }
+    if input > upper_bound {
+        return Ok(Invalid("Le chiffre est trop grand".into()));
+    }
+    if input < lower_bound {
+        return Ok(Invalid("Le chiffre est trop petit".into()));
+    }
+    Ok(Valid)
 }
 
-pub fn is_password_valid(username: &str, password: &str, score_lower_bound: u8) -> Result<(), String> {
+pub fn is_password_valid(username: &str, password: &str, score_lower_bound: u8) -> Result<Validation, CustomUserError> {
     let inputs = [username];
-    match is_short_text_length_valid(password, PASS_MIN_SIZE, PASS_MAX_SIZE) {
-        Err(err) => {
-            return Err(format!("Password {err}"));
-        }
-        Ok(_) => {
-            // zxcvbn will return a score for the password passed in parameter
-            let estimate = zxcvbn(password, &inputs).unwrap().score();
-            if estimate <= score_lower_bound {
-                return Err(String::from("Password not strong enough"));
-            }
-            Ok(())
-        }
+    let estimate = zxcvbn(password, &inputs).unwrap().score();
+    if estimate <= score_lower_bound {
+        return Ok(Invalid("Le mot de passe n'est pas assez fort".into()));
     }
+    Ok(Valid)
 }
 
 // ------------------ UNIT TESTS --------------------------
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::input_validation::{are_passwords_equals, is_name_valid, is_password_valid, is_short_text_length_valid};
+    use inquire::validator::Validation::{Invalid, Valid};
+    use crate::utils::input_validation::{is_name_valid, is_number_in_range, is_password_valid, is_text_length_valid};
 
-    #[test]
-    fn are_password_equals_returns_true_if_equals() {
-        //Given
-        let pass1 = String::from("Pa$$sw0rd");
-        let pass2 = String::from("Pa$$sw0rd");
-        //When
-        let result = are_passwords_equals(&pass1, &pass2);
-        //Then
-        assert_eq!(result, true)
-    }
-
-    #[test]
-    fn are_password_equals_returns_false_if_not_equals() {
-        //Given
-        let pass1 = String::from("Pa$$sw0rd");
-        let pass2 = String::from("toto");
-        //When
-        let result = are_passwords_equals(&pass1, &pass2);
-        //Then
-        assert_eq!(result, false)
-    }
 
     #[test]
     fn is_short_text_length_valid_returns_ok_if_length_valid() {
@@ -97,9 +72,9 @@ mod tests {
         let ub = 64;
         let input = String::from("I am supposed to be valid");
         //When
-        let result = is_short_text_length_valid(&input, lb, ub);
+        let result = is_text_length_valid(&input, lb, ub);
         //Then
-        assert_eq!(result, Ok(()))
+        assert_eq!(result.unwrap(), Valid)
     }
 
     #[test]
@@ -109,9 +84,9 @@ mod tests {
         let ub = 8;
         let input = String::from("Whatever");
         //When
-        let result = is_short_text_length_valid(&input, lb, ub);
+        let result = is_text_length_valid(&input, lb, ub);
         //Then
-        assert_eq!(result, Err(String::from("Wrong usage: Lower bound must be lesser than upper bound")))
+        assert_eq!(result.unwrap(), Invalid("Mauvaise utilisation: La borne inf. doit être plus petite que la borne sup.".into()))
     }
 
     #[test]
@@ -122,11 +97,50 @@ mod tests {
         let input = "Invalid";
         let input2 = "Yay, I am also invalid, but this time it is because I am too long";
         //When
-        let result = is_short_text_length_valid(input, lb, ub);
-        let result2 = is_short_text_length_valid(input2, lb, ub);
+        let result = is_text_length_valid(input, lb, ub);
+        let result2 = is_text_length_valid(input2, lb, ub);
         //Then
-        assert_eq!(result, Err(String::from("is too short")));
-        assert_eq!(result2, Err(String::from("is too long")));
+        assert_eq!(result.unwrap(), Invalid("est trop court".into()).into());
+        assert_eq!(result2.unwrap(), Invalid("est trop long".into()));
+    }
+
+    #[test]
+    fn is_number_in_range_returns_ok_if_valid() {
+        //Given
+        let lb = 0;
+        let ub = 10;
+        let input = 5;
+        //When
+        let result = is_number_in_range(input, lb, ub);
+        //Then
+        assert_eq!(result.unwrap(), Valid);
+    }
+
+    #[test]
+    fn is_number_in_range_returns_err_if_invalid() {
+        //Given
+        let lb = 1;
+        let ub = 10;
+        let input = 11;
+        let input2 = 0;
+        //When
+        let result = is_number_in_range(input, lb, ub);
+        let result2 = is_number_in_range(input2, lb, ub);
+        //Then
+        assert_eq!(result.unwrap(), Invalid("Le chiffre est trop grand".into()));
+        assert_eq!(result2.unwrap(), Invalid("Le chiffre est trop petit".into()));
+    }
+
+    #[test]
+    fn is_number_in_range_returns_err_if_wrong_usage() {
+        //Given
+        let lb = 10;
+        let ub = 1;
+        let input = 5;
+        //When
+        let result = is_number_in_range(input, lb, ub);
+        //Then
+        assert_eq!(result.unwrap(), Invalid("Mauvaise utilisation: La borne inf. doit être plus petite que la borne sup.".into()));
     }
 
     #[test]
@@ -141,22 +155,9 @@ mod tests {
         let result2 = is_password_valid(username, pass2, 2);
         let result3 = is_password_valid(username, pass3, 2);
         //Then
-        assert_eq!(result, Ok(()));
-        assert_eq!(result2, Ok(()));
-        assert_eq!(result3, Ok(()));
-    }
-
-    #[test]
-    fn is_password_valid_returns_err_if_length_invalid() {
-        //Given
-        let pass = "short";
-        let pass2 = "Waaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaay too long";
-        //When
-        let result = is_password_valid("toto", pass, 2);
-        let result2 = is_password_valid("toto", pass2, 2);
-        //Then
-        assert_eq!(result, Err(String::from("Password is too short")));
-        assert_eq!(result2, Err(String::from("Password is too long")));
+        assert_eq!(result.unwrap(), Valid);
+        assert_eq!(result2.unwrap(), Valid);
+        assert_eq!(result3.unwrap(), Valid);
     }
 
     #[test]
@@ -173,10 +174,10 @@ mod tests {
         let result3 = is_password_valid(username, pass3, 2);
         let result4 = is_password_valid(username, pass4, 2);
         //Then
-        assert_eq!(result, Err(String::from("Password not strong enough")));
-        assert_eq!(result2, Err(String::from("Password not strong enough")));
-        assert_eq!(result3, Err(String::from("Password not strong enough")));
-        assert_eq!(result4, Err(String::from("Password not strong enough")));
+        assert_eq!(result.unwrap(), Invalid("Le mot de passe n'est pas assez fort".into()));
+        assert_eq!(result2.unwrap(), Invalid("Le mot de passe n'est pas assez fort".into()));
+        assert_eq!(result3.unwrap(), Invalid("Le mot de passe n'est pas assez fort".into()));
+        assert_eq!(result4.unwrap(), Invalid("Le mot de passe n'est pas assez fort".into()));
     }
 
     #[test]
@@ -186,17 +187,17 @@ mod tests {
         let name2 = "Alexandre"; //One name
         let name3 = "François Àräbíatã"; //with special char
         let name4 = "Solène Von Gunten"; //with multiple spaces
-        let expected = Ok(());
+        let expected = Valid;
         //When
         let result = is_name_valid(name);
         let result2 = is_name_valid(name2);
         let result3 = is_name_valid(name3);
         let result4 = is_name_valid(name4);
         //Then
-        assert_eq!(result, expected);
-        assert_eq!(result2, expected);
-        assert_eq!(result3, expected);
-        assert_eq!(result4, expected);
+        assert_eq!(result.unwrap(), expected);
+        assert_eq!(result2.unwrap(), expected);
+        assert_eq!(result3.unwrap(), expected);
+        assert_eq!(result4.unwrap(), expected);
     }
     #[test]
     fn is_name_valid_returns_err_if_invalid() {
@@ -207,7 +208,7 @@ mod tests {
         let name4 = " Marcus"; //spaces not authorized if not between chars
         let name5 = "Bṓris"; //invalid special char
         let name6 = "ahlfshkdshfoiwjlkdmslvndlkfhgisjlmfsdlsadasdasdasdassdlkjfdkfgjkdsnfjkknkejdsdgjsiodhgsdp"; //too long
-        let expected = Err(String::from("Name is invalid"));
+        let expected = Invalid("Le nom entré est invalide".into());
         //When
         let result = is_name_valid(name);
         let result2 = is_name_valid(name2);
@@ -216,11 +217,11 @@ mod tests {
         let result5 = is_name_valid(name5);
         let result6 = is_name_valid(name6);
         //Then
-        assert_eq!(result, expected);
-        assert_eq!(result2, expected);
-        assert_eq!(result3, expected);
-        assert_eq!(result4, expected);
-        assert_eq!(result5, expected);
-        assert_eq!(result6, expected);
+        assert_eq!(result.unwrap(), expected);
+        assert_eq!(result2.unwrap(), expected);
+        assert_eq!(result3.unwrap(), expected);
+        assert_eq!(result4.unwrap(), expected);
+        assert_eq!(result5.unwrap(), expected);
+        assert_eq!(result6.unwrap(), expected);
     }
 }

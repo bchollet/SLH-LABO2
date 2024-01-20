@@ -1,20 +1,5 @@
 {
   "users": {
-    "TheStrongestOne": {
-      "name": "TheStrongestOne",
-      "password": "Sur terre comme au ciel, moi seul mérite d'être vénéré",
-      "role": {
-        "name": "Admin"
-      }
-    },
-    "babacouda": {
-      "name": "babacouda",
-      "password": "babacouda",
-      "role": {
-        "name": "Owner",
-        "owned_establishment": "CBO"
-      }
-    },
     "Sire Debeugg": {
       "name": "Sire Debeugg",
       "password": "0n_d17_ch1ffr3r_3t_p4s_crypt3r",
@@ -28,6 +13,13 @@
       "role": {
         "name": "Owner",
         "owned_establishment": "McDonalds"
+      }
+    },
+    "TheStrongestOne": {
+      "name": "TheStrongestOne",
+      "password": "Sur terre comme au ciel, moi seul mérite d'être vénéré",
+      "role": {
+        "name": "Admin"
       }
     }
   },
@@ -54,12 +46,6 @@
       "establishment": "Triple R",
       "reviewer": "Conte Devvisse",
       "comment": "Venez chez moi !",
-      "grade": 1
-    },
-    {
-      "establishment": "Triple R",
-      "reviewer": "babacouda",
-      "comment": "C'est vraiment de la merde oskour",
       "grade": 1
     }
   ]
