@@ -7,31 +7,16 @@
         "name": "Admin"
       }
     },
-    "TheStrongestOne": {
-      "name": "TheStrongestOne",
-      "password": "$argon2id$v=19$m=19456,t=2,p=1$M2MyYjhkM2VmNzJhYjcxNWI5YTQ0NjhjZTkyZmY3YmQ$g/0uq+bDpLIUwNfRL0jHH3zKhmaNPaQZxe1+TngG2ug",
+    "Bastian": {
+      "name": "Bastian",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$MGFkMjc3NTAxOTVkOTg0Y2EwNDkxNWY2MTBlODg0NGU$LUs42gX9H5lHzcG+QU60uTrgJx3eu4ux05dm23Dv9Go",
       "role": {
-        "name": "Admin"
+        "name": "Reviewer"
       }
     },
     "Sire Debeugg": {
       "name": "Sire Debeugg",
       "password": "$argon2id$v=19$m=19456,t=2,p=1$OGQzNGZmYjY1N2Y2OTc0N2VkMzc0OGI2MTJhMDA2Yjk$YGw72mU2lBMKFdvHAPs4INIOFFHmc796+/RsxQ8Lb+U",
-      "role": {
-        "name": "Reviewer"
-      }
-    },
-    "Conte Devvisse": {
-      "name": "Conte Devvisse",
-      "password": "$argon2id$v=19$m=19456,t=2,p=1$ZTAyN2E3OWE5ZGQ0ODc2MWVhMzg1YzZjMzExOTI0MTg$GB8lciImkuEBfYeUxNeYjv7yPI1rB3/t6QfJU9O/R7Q",
-      "role": {
-        "name": "Owner",
-        "owned_establishment": "McDonalds"
-      }
-    },
-    "Bastian": {
-      "name": "Bastian",
-      "password": "$argon2id$v=19$m=19456,t=2,p=1$MGFkMjc3NTAxOTVkOTg0Y2EwNDkxNWY2MTBlODg0NGU$LUs42gX9H5lHzcG+QU60uTrgJx3eu4ux05dm23Dv9Go",
       "role": {
         "name": "Reviewer"
       }
@@ -42,6 +27,21 @@
       "role": {
         "name": "Owner",
         "owned_establishment": "CocoLoco"
+      }
+    },
+    "TheStrongestOne": {
+      "name": "TheStrongestOne",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$M2MyYjhkM2VmNzJhYjcxNWI5YTQ0NjhjZTkyZmY3YmQ$g/0uq+bDpLIUwNfRL0jHH3zKhmaNPaQZxe1+TngG2ug",
+      "role": {
+        "name": "Admin"
+      }
+    },
+    "Conte Devvisse": {
+      "name": "Conte Devvisse",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$ZTAyN2E3OWE5ZGQ0ODc2MWVhMzg1YzZjMzExOTI0MTg$GB8lciImkuEBfYeUxNeYjv7yPI1rB3/t6QfJU9O/R7Q",
+      "role": {
+        "name": "Owner",
+        "owned_establishment": "McDonalds"
       }
     }
   },

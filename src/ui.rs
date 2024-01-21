@@ -65,7 +65,7 @@ fn login() -> ShouldContinue {
         .unwrap();
 
     let user = User::get(&username).unwrap_or_else(|| {
-        //No collision since input validation does not allow empty string
+        //No collision since input validation does not allow empty string as username
         User::new("", "", Role::Reviewer)
     });
     let name = if user.name.is_empty() { None } else { Some(&*user.name) };
