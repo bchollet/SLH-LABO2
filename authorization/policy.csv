@@ -1,3 +1,7 @@
 p, r.sub.role.name == "Admin", delete
 p, r.sub.role.name == "Admin" || r.sub.role.name == "Reviewer", review
+p, r.sub.role.name == "Admin", read
+p, r.sub.role.name == "Reviewer" && r.sub.name == r.obj, read
 p, r.sub.role.name == "Owner" && r.sub.role.owned_establishment != r.obj, review
+p, r.sub.role.name == "Owner" && r.sub.role.owned_establishment == r.obj, read
+p, r.sub.role.name == "Owner" && r.sub.name == r.obj, read

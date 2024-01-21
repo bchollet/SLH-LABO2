@@ -2,11 +2,10 @@ use crate::{Review, Role, User};
 use anyhow::{anyhow, bail};
 use derive_more::Display;
 use futures::executor::block_on;
-use inquire::{Confirm, CustomType, max_length, min_length, Password, PasswordDisplayMode, Select, Text};
-use inquire::validator::{StringValidator};
+use inquire::{Confirm, CustomType, max_length, Password, PasswordDisplayMode, Select, Text};
 use strum::{EnumIter, IntoEnumIterator};
 use crate::utils::authorization::is_authorized;
-use crate::utils::input_validation::{is_name_valid, is_number_in_range, is_password_valid, is_text_length_valid, PASS_MAX_SIZE, PASS_MIN_SIZE, REVIEW_MAX_GRADE, REVIEW_MAX_SIZE, REVIEW_MIN_GRADE, REVIEW_MIN_SIZE};
+use crate::utils::input_validation::{is_name_valid, is_number_in_range, is_password_valid, is_text_length_valid, SHORT_TEXT_MAX_SIZE, REVIEW_MAX_GRADE, REVIEW_MAX_SIZE, REVIEW_MIN_GRADE, REVIEW_MIN_SIZE, PASS_DEFAULT_SCORE};
 use crate::utils::password::{checked_password, hash_password};
 
 enum ShouldContinue {
@@ -60,13 +59,14 @@ fn login() -> ShouldContinue {
         .prompt()
         .unwrap();
     let password = Password::new("Entrez votre mot de passe: ")
-        .with_validator(max_length!(PASS_MAX_SIZE, "Le mot de passe doit contenir au plus 64 caractères"))
+        .with_validator(max_length!(SHORT_TEXT_MAX_SIZE, "Le mot de passe doit contenir au plus 64 caractères"))
         .without_confirmation()
         .prompt()
         .unwrap();
 
     let user = User::get(&username).unwrap_or_else(|| {
-        User::new("", "", Role::Reviewer) //No collision since input validation does not allow empty string
+        //No collision since input validation does not allow empty string
+        User::new("", "", Role::Reviewer)
     });
     let name = if user.name.is_empty() { None } else { Some(&*user.name) };
     let result = checked_password(name, &user.password, &password);
@@ -87,17 +87,11 @@ fn register() -> ShouldContinue {
         .unwrap();
 
     let cloned_username = username.clone();
-    let validators: Vec<Box<dyn StringValidator>> = vec![
-        Box::new(min_length!(PASS_MIN_SIZE, "Le mot de passe doit contenir au moins 8 caractères")),
-        Box::new(max_length!(PASS_MAX_SIZE, "Le mot de passe doit contenir au plus 64 caractères")),
-        Box::new(move |input: &str| is_password_valid(&cloned_username, input, 2)),
-    ];
-
     let password = Password::new("Entrez votre mot de passe : ")
         .with_display_mode(PasswordDisplayMode::Masked)
         .with_custom_confirmation_message("Confirmez votre mot de passe : ")
         .with_custom_confirmation_error_message("Les mots de passe ne correspondent pas")
-        .with_validators(&validators)
+        .with_validator(move |input: &str| is_password_valid(&cloned_username, input, PASS_DEFAULT_SCORE))
         .prompt()
         .unwrap();
     let is_owner = Confirm::new("Êtes-vous propriétaire d'un établissement ?")
@@ -156,7 +150,7 @@ fn user_menu(user: &User) -> ShouldContinue {
             println!("{}", e);
             ShouldContinue::Yes
         }),
-        Choice::ListEstablishmentReviews => list_establishment_reviews(),
+        Choice::ListEstablishmentReviews => list_establishment_reviews(user),
         Choice::DeleteReview => delete_review(user).unwrap_or_else(|e| {
             println!("{}", e);
             ShouldContinue::Yes
@@ -176,13 +170,8 @@ fn list_own_reviews(user: &User) -> ShouldContinue {
 fn add_review(user: &User) -> anyhow::Result<ShouldContinue> {
     let establishment = Text::new("Entrez le nom de l'établissement : ").prompt()?;
 
-    if let Role::Owner {
-        ref owned_establishment,
-    } = user.role
-    {
-        if owned_establishment == &establishment {
-            bail!("vous ne pouvez pas ajouter d'avis sur votre propre établissement");
-        }
+    if !block_on(is_authorized(&user, &establishment, "review")) {
+        bail!("vous n'êtes pas autorisé à ajouter un avis sur cet établissement")
     }
 
     let comment = Text::new("Entrez votre commentaire : ")
@@ -198,20 +187,23 @@ fn add_review(user: &User) -> anyhow::Result<ShouldContinue> {
     Ok(ShouldContinue::Yes)
 }
 
-fn list_establishment_reviews() -> ShouldContinue {
+fn list_establishment_reviews(user: &User) -> ShouldContinue {
     let establishment = Text::new("Entrez le nom de l'établissement : ")
         .with_validator(is_name_valid)
         .prompt()
         .unwrap();
 
-    //FIXME: Owner should only read their review => casbin
-    //FIXME: Reviewers should only read their review => casbin
-    for review in Review::of(&establishment) {
-        /*
-        if(e.enforce(user, review.reviewer, "read")) {
-            println!("{}, review")
-         }
-        */
+    let binding = Review::of(&establishment);
+    let reviews: Vec<&Review> = binding.iter()
+        .filter(|review| block_on(is_authorized(&user, &review.reviewer, "read")) ||
+            block_on(is_authorized(&user, &review.establishment, "read")))
+        .collect();
+
+    if reviews.is_empty() {
+        println!("Aucun avis trouvé");
+    }
+
+    for review in reviews {
         println!("{}", review);
     }
 
@@ -219,8 +211,7 @@ fn list_establishment_reviews() -> ShouldContinue {
 }
 
 fn delete_review(_user: &User) -> anyhow::Result<ShouldContinue> {
-    let is_admin = block_on(is_authorized(_user.clone(), "toto", "delete"));
-    if !is_admin {
+    if !block_on(is_authorized(&_user, "any", "delete")) {
         bail!("vous n'êtes pas administrateur")
     }
 

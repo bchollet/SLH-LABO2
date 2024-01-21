@@ -1,36 +1,50 @@
-use inquire::CustomUserError;
-use inquire::validator::{Validation};
+use inquire::{CustomUserError, max_length, min_length};
+use inquire::validator::{StringValidator, Validation};
 use inquire::validator::Validation::{Invalid, Valid};
 use zxcvbn::zxcvbn;
 use regex::Regex;
 
 pub const PASS_MIN_SIZE: usize = 8;
-pub const PASS_MAX_SIZE: usize = 64;
-pub const NAME_MAX_SIZE: usize = 63;
+pub const PASS_DEFAULT_SCORE: u8 = 2;
+pub const SHORT_TEXT_MAX_SIZE: usize = 64;
 pub const REVIEW_MIN_SIZE: usize = 1;
 pub const REVIEW_MAX_SIZE: usize = 650;
 pub const REVIEW_MIN_GRADE: u8 = 1;
 pub const REVIEW_MAX_GRADE: u8 = 5;
 
 pub fn is_name_valid(name: &str) -> Result<Validation, CustomUserError> {
-    let regex_str = r"^[a-zA-Z0-9À-ÖØ-öø-ÿ]+(?:\s[a-zA-Z0-9À-ÖØ-öø-ÿ]+)*$";
-    let regex = Regex::new(regex_str).unwrap();
-    if regex.is_match(name) && name.chars().count() <= NAME_MAX_SIZE {
-        return Ok(Valid);
+    //Check length
+    let length_valid = max_length!(SHORT_TEXT_MAX_SIZE, format!("Le nom doit contenir au plus {} caractères", SHORT_TEXT_MAX_SIZE))
+        .validate(name)?;
+
+    if length_valid == Valid {
+        //Check format
+        let regex_str = r"^[a-zA-Z0-9À-ÖØ-öø-ÿ]+(?:\s[a-zA-Z0-9À-ÖØ-öø-ÿ]+)*$";
+        let regex = Regex::new(regex_str).unwrap();
+        if !regex.is_match(name) {
+            return Ok(Invalid("Le nom entré est invalide".into()));
+        }
     }
-    Ok(Invalid("Le nom entré est invalide".into()))
+
+    Ok(length_valid)
 }
 
-pub fn is_text_length_valid(input: &str, lower_bound: usize, upper_bound: usize) -> Result<Validation, CustomUserError> {
+pub fn is_text_length_valid(text: &str, lower_bound: usize, upper_bound: usize) -> Result<Validation, CustomUserError> {
     if lower_bound >= upper_bound {
         return Ok(Invalid("Mauvaise utilisation: La borne inf. doit être plus petite que la borne sup.".into()));
     }
-    if input.chars().count() > upper_bound {
-        return Ok(Invalid("est trop long".into()));
+
+    let min_valid = min_length!(lower_bound, format!("Texte trop court (min {} caractères)", lower_bound))
+        .validate(text)?;
+    if min_valid != Valid {
+        return Ok(min_valid);
     }
-    if input.chars().count() < lower_bound {
-        return Ok(Invalid("est trop court".into()));
+    let max_valid = max_length!(upper_bound, format!("Texte trop long (max {} caractères)", upper_bound))
+        .validate(text)?;
+    if max_valid != Valid {
+        return Ok(max_valid);
     }
+
     Ok(Valid)
 }
 
@@ -48,6 +62,19 @@ pub fn is_number_in_range(input: &u8, lower_bound: u8, upper_bound: u8) -> Resul
 }
 
 pub fn is_password_valid(username: &str, password: &str, score_lower_bound: u8) -> Result<Validation, CustomUserError> {
+    //Check length
+    let max_valid = max_length!(SHORT_TEXT_MAX_SIZE, format!("Le mot de passe doit contenir au plus {} caractères", SHORT_TEXT_MAX_SIZE))
+        .validate(&password)?;
+    if max_valid != Valid {
+        return Ok(max_valid);
+    }
+    let min_valid = min_length!(PASS_MIN_SIZE, format!("Le mot de passe doit contenir au moins {} caractères", PASS_MIN_SIZE))
+        .validate(&password)?;
+    if min_valid != Valid {
+        return Ok(min_valid);
+    }
+
+    //Check strength
     let inputs = [username];
     let estimate = zxcvbn(password, &inputs).unwrap().score();
     if estimate <= score_lower_bound {
@@ -71,9 +98,9 @@ mod tests {
         let ub = 64;
         let input = String::from("I am supposed to be valid");
         //When
-        let result = is_text_length_valid(&input, lb, ub);
+        let result = is_text_length_valid(&input, lb, ub).unwrap();
         //Then
-        assert_eq!(result.unwrap(), Valid)
+        assert_eq!(result, Valid)
     }
 
     #[test]
@@ -83,24 +110,24 @@ mod tests {
         let ub = 8;
         let input = String::from("Whatever");
         //When
-        let result = is_text_length_valid(&input, lb, ub);
+        let result = is_text_length_valid(&input, lb, ub).unwrap();
         //Then
-        assert_eq!(result.unwrap(), Invalid("Mauvaise utilisation: La borne inf. doit être plus petite que la borne sup.".into()))
+        assert_eq!(result, Invalid("Mauvaise utilisation: La borne inf. doit être plus petite que la borne sup.".into()))
     }
 
     #[test]
     fn is_short_text_length_valid_returns_err_if_length_invalid() {
         //Given
         let lb = 8;
-        let ub = 64;
+        let ub = 10;
         let input = "Invalid";
         let input2 = "Yay, I am also invalid, but this time it is because I am too long";
         //When
-        let result = is_text_length_valid(input, lb, ub);
-        let result2 = is_text_length_valid(input2, lb, ub);
+        let result = is_text_length_valid(&input, lb, ub).unwrap();
+        let result2 = is_text_length_valid(&input2, lb, ub).unwrap();
         //Then
-        assert_eq!(result.unwrap(), Invalid("est trop court".into()).into());
-        assert_eq!(result2.unwrap(), Invalid("est trop long".into()));
+        assert_eq!(result, Invalid("Texte trop court (min 8 caractères)".into()));
+        assert_eq!(result2, Invalid("Texte trop long (max 10 caractères)".into()));
     }
 
     #[test]
@@ -198,6 +225,7 @@ mod tests {
         assert_eq!(result3.unwrap(), expected);
         assert_eq!(result4.unwrap(), expected);
     }
+
     #[test]
     fn is_name_valid_returns_err_if_invalid() {
         //Given
@@ -208,19 +236,20 @@ mod tests {
         let name5 = "Bṓris"; //invalid special char
         let name6 = "ahlfshkdshfoiwjlkdmslvndlkfhgisjlmfsdlsadasdasdasdassdlkjfdkfgjkdsnfjkknkejdsdgjsiodhgsdp"; //too long
         let expected = Invalid("Le nom entré est invalide".into());
+        let expected_long = Invalid("Le nom doit contenir au plus 64 caractères".into());
         //When
-        let result = is_name_valid(name);
-        let result2 = is_name_valid(name2);
-        let result3 = is_name_valid(name3);
-        let result4 = is_name_valid(name4);
-        let result5 = is_name_valid(name5);
-        let result6 = is_name_valid(name6);
+        let result = is_name_valid(name).unwrap();
+        let result2 = is_name_valid(name2).unwrap();
+        let result3 = is_name_valid(name3).unwrap();
+        let result4 = is_name_valid(name4).unwrap();
+        let result5 = is_name_valid(name5).unwrap();
+        let result6 = is_name_valid(name6).unwrap();
         //Then
-        assert_eq!(result.unwrap(), expected);
-        assert_eq!(result2.unwrap(), expected);
-        assert_eq!(result3.unwrap(), expected);
-        assert_eq!(result4.unwrap(), expected);
-        assert_eq!(result5.unwrap(), expected);
-        assert_eq!(result6.unwrap(), expected);
+        assert_eq!(result, expected);
+        assert_eq!(result2, expected);
+        assert_eq!(result3, expected);
+        assert_eq!(result4, expected);
+        assert_eq!(result5, expected);
+        assert_eq!(result6, expected_long);
     }
 }

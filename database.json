@@ -1,12 +1,5 @@
 {
   "users": {
-    "Sire Debeugg": {
-      "name": "Sire Debeugg",
-      "password": "$argon2id$v=19$m=19456,t=2,p=1$OGQzNGZmYjY1N2Y2OTc0N2VkMzc0OGI2MTJhMDA2Yjk$YGw72mU2lBMKFdvHAPs4INIOFFHmc796+/RsxQ8Lb+U",
-      "role": {
-        "name": "Reviewer"
-      }
-    },
     "Toto": {
       "name": "Toto",
       "password": "$argon2id$v=19$m=19456,t=2,p=1$YjBiMDE3MTA1MDUxMDM1ZjE3YWJmYzU3NDA1NDI0MWI$UVu33eOgzmzqyXuU0g29BzgWKnp2pWz2hMYDt0d9G4E",
@@ -21,12 +14,34 @@
         "name": "Admin"
       }
     },
+    "Sire Debeugg": {
+      "name": "Sire Debeugg",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$OGQzNGZmYjY1N2Y2OTc0N2VkMzc0OGI2MTJhMDA2Yjk$YGw72mU2lBMKFdvHAPs4INIOFFHmc796+/RsxQ8Lb+U",
+      "role": {
+        "name": "Reviewer"
+      }
+    },
     "Conte Devvisse": {
       "name": "Conte Devvisse",
       "password": "$argon2id$v=19$m=19456,t=2,p=1$ZTAyN2E3OWE5ZGQ0ODc2MWVhMzg1YzZjMzExOTI0MTg$GB8lciImkuEBfYeUxNeYjv7yPI1rB3/t6QfJU9O/R7Q",
       "role": {
         "name": "Owner",
         "owned_establishment": "McDonalds"
+      }
+    },
+    "Bastian": {
+      "name": "Bastian",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$MGFkMjc3NTAxOTVkOTg0Y2EwNDkxNWY2MTBlODg0NGU$LUs42gX9H5lHzcG+QU60uTrgJx3eu4ux05dm23Dv9Go",
+      "role": {
+        "name": "Reviewer"
+      }
+    },
+    "Yvan": {
+      "name": "Yvan",
+      "password": "$argon2id$v=19$m=19456,t=2,p=1$YjI0ZDEzY2UxZWNlODJlYWEwOWJkZDEzOGIzYmI3Yzc$vV80fYjc4vl0H2bYQM4dnGLHrcqQwXEwaX/coo93hzA",
+      "role": {
+        "name": "Owner",
+        "owned_establishment": "CocoLoco"
       }
     }
   },
@@ -54,6 +69,30 @@
       "reviewer": "Conte Devvisse",
       "comment": "Venez chez moi !",
       "grade": 1
+    },
+    {
+      "establishment": "CocoLoco",
+      "reviewer": "Bastian",
+      "comment": "Rentsh l'adore !",
+      "grade": 5
+    },
+    {
+      "establishment": "CocoLoco",
+      "reviewer": "Toto",
+      "comment": "mdr",
+      "grade": 1
+    },
+    {
+      "establishment": "McDonalds",
+      "reviewer": "Yvan",
+      "comment": "C'est pas aussi bien que chez moi",
+      "grade": 2
+    },
+    {
+      "establishment": "McDonalds",
+      "reviewer": "Bastian",
+      "comment": "Le CBO",
+      "grade": 5
     }
   ]
 }
